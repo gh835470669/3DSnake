@@ -5,6 +5,7 @@ using UnityEngine;
 public class MetaField {
 
     public bool isExist;
+    public bool canWalk;
     public Vector3 LocalPos;
     public int[] objects;
     public const int BAN = -1;
@@ -14,7 +15,8 @@ public class MetaField {
 
     public MetaField()
     {
-        isExist = true;
+        isExist = false;
+        canWalk = false;
         LocalPos = Vector3.zero;
         objects = new int[6];
         for (int i = 0; i < 6; i++)

@@ -18,7 +18,10 @@ public class FieldManager : MonoBehaviour {
     static public int WorldSpeed = 30;
     public GameObject foodPrefab;
     public GameObject cubePrefab;
+    public GameObject wholeFieldPrefab;
+    private Transform fieldTransform;
     public int len = 7;
+    private WholeFiledData fdata;
     public MetaField[,,] field;
     public Vector3 WorldCenter;
 
@@ -35,60 +38,102 @@ public class FieldManager : MonoBehaviour {
     // Use this for initialization
     void Awake () {
         food = Instantiate(foodPrefab);
-        field = new MetaField[len, len, len];
+        GameObject f = Instantiate(wholeFieldPrefab);
+        fieldTransform = wholeFieldPrefab.transform.FindChild("Field");
+        fdata = fieldTransform.GetComponent<WholeFiledData>();
+        //print("fdata");
+        //print(fdata.lenX);
+        //print(fdata.lenY);
+        //print(fdata.lenZ);
+        field = new MetaField[fdata.lenX, fdata.lenY, fdata.lenZ];
+        WorldCenter = new Vector3(fdata.lenX / 2.0f, fdata.lenY / 2.0f, fdata.lenZ / 2.0f);
+        //field = new MetaField[len, len, len];
+        //float half = (float)len / 2;
+        //WorldCenter = new Vector3(half, half, half);
 
-        float half = (float)len / 2;
-        WorldCenter = new Vector3(half, half, half);
-
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < fdata.lenX; i++)
         {
-            for (int j = 0; j < len; j++)
+            for (int j = 0; j < fdata.lenY; j++)
             {
-                for (int k = 0; k < len; k++)
+                for (int k = 0; k < fdata.lenZ; k++)
                 {
                     field[i, j, k] = new MetaField();
                     field[i, j, k].LocalPos = new Vector3(i, j, k);
-                    if (i == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.left)));
-                    if (i == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.right)));
-                    if (j == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.down)));
-                    if (j == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.up)));
-                    if (k == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.back)));
-                    if (k == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.forward)));
+                    //if (i == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.left)));
+                    //if (i == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.right)));
+                    //if (j == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.down)));
+                    //if (j == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.up)));
+                    //if (k == 0) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.back)));
+                    //if (k == len - 1) setObject(MetaField.EMPTY, new FieldPosition(i, j, k, MetaField.objectDirToIndex(Vector3.forward)));
                 }
             }
         }
 
-        //custom
-        for (int i = 0; i < len; i++)
+        foreach (Transform child in fieldTransform)
         {
-            for (int j = 0; j < len; j++)
+            FieldData data = child.GetComponent<FieldData>();
+            if (data.isFieldCube)
             {
-                for (int k = 0; k < len; k++)
+                MetaField mf = field[(int)child.position.x, (int)child.position.y, (int)child.position.z];
+                mf.isExist = true;
+                mf.canWalk = data.canWalk;
+            }
+                
+        }
+
+        for (int i = 0; i < fdata.lenX; i++)
+        {
+            for (int j = 0; j < fdata.lenY; j++)
+            {
+                for (int k = 0; k < fdata.lenZ; k++)
                 {
-                    int _i = i;
-                    if (_i > half) _i = len - 1 - _i;
-                    int _j = j;
-                    if (_j > half) _j = len - 1 - _j;
-                    int _k = k;
-                    if (_k > half) _k = len - 1 - _k;
-                    if (_i + _j + _k <= 1) setMetaFieldEmpty(i, j, k);
+                    if (field[i,j,k].isExist && field[i, j, k].canWalk)
+                    {
+                        for (int l = 0; l < 6; l++)
+                        {
+                            Vector3 v = MetaField.objectIndexToDir(l);
+                            Vector3 newPos = new Vector3(i, j, k) + v;
+                            if (newPos.x == -1 || newPos.x == fdata.lenX || newPos.y == -1 || newPos.y == fdata.lenY || newPos.z == -1 || newPos.z == fdata.lenZ)
+                                setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
+                            else if (field[(int)newPos.x, (int)newPos.y, (int)newPos.z].isExist == false)
+                                setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
+                        }
+                    }
                 }
             }
         }
 
-        //show gameobjects visible
-        for (int i = 0; i < len; i++)
-        {
-            for (int j = 0; j < len; j++)
-            {
-                for (int k = 0; k < len; k++)
-                {
-                    if (!field[i, j, k].isExist) continue;
-                    GameObject g = Instantiate(cubePrefab, new Vector3(i, j, k), new Quaternion());
-                    g.transform.parent = this.gameObject.transform;
-                }
-            }
-        }
+        ////custom
+        //for (int i = 0; i < len; i++)
+        //{
+        //    for (int j = 0; j < len; j++)
+        //    {
+        //        for (int k = 0; k < len; k++)
+        //        {
+        //            int _i = i;
+        //            if (_i > half) _i = len - 1 - _i;
+        //            int _j = j;
+        //            if (_j > half) _j = len - 1 - _j;
+        //            int _k = k;
+        //            if (_k > half) _k = len - 1 - _k;
+        //            if (_i + _j + _k <= 1) setMetaFieldEmpty(i, j, k);
+        //        }
+        //    }
+        //}
+
+        ////show gameobjects visible
+        //for (int i = 0; i < len; i++)
+        //{
+        //    for (int j = 0; j < len; j++)
+        //    {
+        //        for (int k = 0; k < len; k++)
+        //        {
+        //            if (!field[i, j, k].isExist) continue;
+        //            GameObject g = Instantiate(cubePrefab, new Vector3(i, j, k), new Quaternion());
+        //            g.transform.parent = this.gameObject.transform;
+        //        }
+        //    }
+        //}
 
     }
 
@@ -143,11 +188,11 @@ public class FieldManager : MonoBehaviour {
                 ys.Clear();
                 zs.Clear();
                 os.Clear();
-                for (int i = 0; i < len; i++)
+                for (int i = 0; i < fdata.lenX; i++)
                 {
-                    for (int j = 0; j < len; j++)
+                    for (int j = 0; j < fdata.lenY; j++)
                     {
-                        for (int k = 0; k < len; k++)
+                        for (int k = 0; k < fdata.lenZ; k++)
                         {
                             for (int l = 0; l < 6; l++)
                             {
@@ -167,6 +212,7 @@ public class FieldManager : MonoBehaviour {
                 int p = UnityEngine.Random.Range(0, fs.Count);
                 print("snake: " + fs[p].x + " " + fs[p].y + " " + fs[p].z + " " + MetaField.objectIndexToDir(fs[p].objIndex));
                 msg.obj.transform.position = localPosToWorld(fs[p], 0.5f);
+                msg.obj.transform.up = MetaField.objectIndexToDir(fs[p].objIndex);
                 setObject(msg._object, fs[p]);
             }
 
@@ -203,7 +249,7 @@ public class FieldManager : MonoBehaviour {
         int next_x = headPositionInField.x + (int)forwardDir.x;
         int next_y = headPositionInField.y + (int)forwardDir.y;
         int next_z = headPositionInField.z + (int)forwardDir.z;
-        if (next_x < 0 || next_x >= len || next_y < 0 || next_y >= len || next_z < 0 || next_z >= len)
+        if (next_x < 0 || next_x >= fdata.lenX || next_y < 0 || next_y >= fdata.lenY || next_z < 0 || next_z >= fdata.lenZ)
         {
             next[0] = null;
             next[1] = null;
@@ -216,7 +262,7 @@ public class FieldManager : MonoBehaviour {
         next_y += (int)upDir.y;
         next_z += (int)upDir.z;
 
-        if (next_x < 0 || next_x >= len || next_y < 0 || next_y >= len || next_z < 0 || next_z >= len)
+        if (next_x < 0 || next_x >= fdata.lenX || next_y < 0 || next_y >= fdata.lenY || next_z < 0 || next_z >= fdata.lenZ)
         {
             next[0] = null;
             return;

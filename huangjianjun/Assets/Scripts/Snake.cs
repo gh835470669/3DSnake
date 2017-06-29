@@ -20,7 +20,9 @@ public class FieldPosition
 }
 
 public class Snake : MonoBehaviour {
-    public int len = 2;
+    public int len = 1; //init len had better be 1, so you only consider the position and rotation of head, no considering bodies
+    public Vector3 initHeadPosition;
+    public Vector3 initHeadRotation;
     public int speed = 10;
     public int maxHealth = 10;
     public int health;
@@ -32,7 +34,7 @@ public class Snake : MonoBehaviour {
 
     private FieldManager fieldManager;
 
-    private FieldPosition headPositionInField = new FieldPosition(0, 4, 0, MetaField.objectDirToIndex(Vector3.back));
+    private FieldPosition headPositionInField;
 
     // Use this for initialization
     void Start () {
@@ -41,15 +43,17 @@ public class Snake : MonoBehaviour {
             fieldManager = FindObjectOfType<FieldManager>();
         }
 
+        head.transform.rotation = Quaternion.Euler(initHeadRotation.x, initHeadRotation.y, initHeadRotation.z);
+        headPositionInField = new FieldPosition((int)initHeadPosition.x, (int)initHeadPosition.y, (int)initHeadPosition.z, MetaField.objectDirToIndex(head.transform.up));
         setHeadInWorld(headPositionInField);
-        head.transform.rotation = Quaternion.Euler(-90, 0, 0);
+        
         initBodies();
         health = maxHealth;
     }
 
     private void initBodies()
     {
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < len - 1; i++)
         {
             FieldPosition pos = new FieldPosition();
             pos.x = headPositionInField.x - (int)head.transform.forward.x;
@@ -88,12 +92,14 @@ public class Snake : MonoBehaviour {
             {
                 n = new FieldPosition(headPositionInField.x, headPositionInField.y , headPositionInField.z,
                     MetaField.objectDirToIndex(forwardDir));
+                if (fieldManager.getObject(n) == MetaField.BAN) return;
                 head.transform.Rotate(90, 0, 0, Space.Self);
             }
             else
             {
                 n = new FieldPosition((int)next[1].LocalPos.x, (int)next[1].LocalPos.y,(int)next[1].LocalPos.z,
                     MetaField.objectDirToIndex(head.transform.up));
+                if (fieldManager.getObject(n) == MetaField.BAN) return;
                 head.transform.Rotate(0, 0, 0, Space.Self);
             }
 
@@ -102,6 +108,7 @@ public class Snake : MonoBehaviour {
         {
             n = new FieldPosition ((int)next[0].LocalPos.x, (int)next[0].LocalPos.y,(int)next[0].LocalPos.z,
                     MetaField.objectDirToIndex(-forwardDir));
+            if (fieldManager.getObject(n) == MetaField.BAN) return;
             head.transform.Rotate(-90, 0, 0, Space.Self);
         }
 
