@@ -1,0 +1,46 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 14.03.2017 14:24:54
+
+newmtl cube_world_atlas_01
+	Ns 0.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 1.000000 1.000000 1.000000
+	Kd 0.800000 0.800000 0.800000
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas.tga
+	map_Kd C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas.tga
+	map_d C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas.tga
+
+newmtl cube_world_atlas_02
+	Ns 0.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.000000 0.000000 0.000000
+	Kd 0.800000 0.800000 0.800000
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas_2.tga
+	map_Kd C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas_2.tga
+	map_d C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\cube_world_atlas_2.tga
+
+newmtl lambert3
+	Ns 0.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.000000 0.000000 0.000000
+	Kd 0.800000 0.800000 0.800000
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\dirt_01_1.png
+	map_Kd C:\u3d_P\project_5.0\showModle\Assets\Cubes\textures\dirt_01_1.png

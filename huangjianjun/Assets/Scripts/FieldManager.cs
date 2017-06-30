@@ -1,4 +1,4 @@
-﻿using System;
+﻿//using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +13,8 @@ public class UpdateMessage
     public float gap;
 }
 
-public class FieldManager : MonoBehaviour {
+public class FieldManager : MonoBehaviour
+{
     public int frame = 0;
     static public int WorldSpeed = 30;
     public GameObject foodPrefab;
@@ -36,7 +37,8 @@ public class FieldManager : MonoBehaviour {
     public List<int> os = new List<int>();
 
     // Use this for initialization
-    void Awake () {
+    void Awake()
+    {
         food = Instantiate(foodPrefab);
         GameObject f = Instantiate(wholeFieldPrefab);
         fieldTransform = wholeFieldPrefab.transform.FindChild("Field");
@@ -78,7 +80,7 @@ public class FieldManager : MonoBehaviour {
                 mf.isExist = true;
                 mf.canWalk = data.canWalk;
             }
-                
+
         }
 
         for (int i = 0; i < fdata.lenX; i++)
@@ -87,7 +89,14 @@ public class FieldManager : MonoBehaviour {
             {
                 for (int k = 0; k < fdata.lenZ; k++)
                 {
-                    if (field[i,j,k].isExist && field[i, j, k].canWalk)
+                    if (i == 6 && j == 0 && k == 1)
+                    {
+                        print("6 0 1");
+                        print(field[i, j, k].isExist);
+                        print(field[i, j, k].canWalk);
+                    }
+                    
+                    if (field[i, j, k].isExist && field[i, j, k].canWalk)
                     {
                         for (int l = 0; l < 6; l++)
                         {
@@ -97,6 +106,15 @@ public class FieldManager : MonoBehaviour {
                                 setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
                             else if (field[(int)newPos.x, (int)newPos.y, (int)newPos.z].isExist == false)
                                 setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
+                        }
+                        if (i == 6 && j == 0 && k ==1)
+                        {
+                            print("6 0 1");
+                            for (int l = 0; l < 6; l++)
+                            {
+                                
+                                print(field[i, j, k].objects[l]);
+                            }
                         }
                     }
                 }
@@ -196,7 +214,7 @@ public class FieldManager : MonoBehaviour {
                         {
                             for (int l = 0; l < 6; l++)
                             {
-                                if (field[i,j,k].isExist == true && field[i, j, k].objects[l] == MetaField.EMPTY)
+                                if (field[i, j, k].isExist == true && field[i, j, k].objects[l] == MetaField.EMPTY)
                                 {
                                     fs.Add(new FieldPosition(i, j, k, l));
                                     xs.Add(i);
@@ -204,7 +222,7 @@ public class FieldManager : MonoBehaviour {
                                     zs.Add(k);
                                     os.Add(l);
                                 }
-                                    
+
                             }
                         }
                     }
@@ -273,7 +291,7 @@ public class FieldManager : MonoBehaviour {
 
     public FieldPosition getAnEmptyPosition()
     {
-        
+
         return new FieldPosition();
     }
 
