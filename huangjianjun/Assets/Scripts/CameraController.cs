@@ -6,7 +6,6 @@ public class CameraController : MonoBehaviour
 {
     public Snake snake;
     private Vector3 lastSnakeUpDir;
-    public Camera camera;
     public FieldManager fieldManager;
 
     private float distance;

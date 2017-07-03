@@ -5,8 +5,8 @@ using UnityEngine;
 public class SnakeController : MonoBehaviour {
     public Snake snake;
 
-    private int frame = 0;
-    public int interal;
+    private int frame = 5; //in order to make sure snake update in this World update interal
+    private int interal;
 
     private Vector3 inputBuffer = Vector3.zero;
 

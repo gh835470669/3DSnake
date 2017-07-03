@@ -9,6 +9,7 @@ public class UpdateMessage
     public GameObject obj;
     public FieldPosition oldPos;
     public FieldPosition newPos;
+    public Quaternion newRotation;
     public bool isNewRandom = false;
     public float gap;
 }
@@ -17,16 +18,16 @@ public class FieldManager : MonoBehaviour
 {
     public int frame = 0;
     static public int WorldSpeed = 30;
-    public GameObject foodPrefab;
     public GameObject cubePrefab;
     public GameObject wholeFieldPrefab;
+    private GameObject wholeField;
     private Transform fieldTransform;
     public int len = 7;
     private WholeFiledData fdata;
     public MetaField[,,] field;
     public Vector3 WorldCenter;
-
-    public GameObject food;
+    public Spawner spawner;
+    
 
     private Queue<UpdateMessage> updateQueue = new Queue<UpdateMessage>();
 
@@ -39,8 +40,7 @@ public class FieldManager : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-        food = Instantiate(foodPrefab);
-        GameObject f = Instantiate(wholeFieldPrefab);
+        wholeField = Instantiate(wholeFieldPrefab);
         fieldTransform = wholeFieldPrefab.transform.FindChild("Field");
         fdata = fieldTransform.GetComponent<WholeFiledData>();
         //print("fdata");
@@ -89,12 +89,6 @@ public class FieldManager : MonoBehaviour
             {
                 for (int k = 0; k < fdata.lenZ; k++)
                 {
-                    if (i == 6 && j == 0 && k == 1)
-                    {
-                        print("6 0 1");
-                        print(field[i, j, k].isExist);
-                        print(field[i, j, k].canWalk);
-                    }
                     
                     if (field[i, j, k].isExist && field[i, j, k].canWalk)
                     {
@@ -106,15 +100,6 @@ public class FieldManager : MonoBehaviour
                                 setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
                             else if (field[(int)newPos.x, (int)newPos.y, (int)newPos.z].isExist == false)
                                 setObject(MetaField.EMPTY, new FieldPosition(i, j, k, l));
-                        }
-                        if (i == 6 && j == 0 && k ==1)
-                        {
-                            print("6 0 1");
-                            for (int l = 0; l < 6; l++)
-                            {
-                                
-                                print(field[i, j, k].objects[l]);
-                            }
                         }
                     }
                 }
@@ -157,12 +142,6 @@ public class FieldManager : MonoBehaviour
 
     void Start()
     {
-        UpdateMessage msg = new UpdateMessage();
-        msg._object = MetaField.FOOD;
-        msg.obj = food;
-        msg.isNewRandom = true;
-        enqueueMsg(msg);
-        print("add food");
     }
 
     void Update()
@@ -184,14 +163,19 @@ public class FieldManager : MonoBehaviour
             UpdateMessage msg = old.Dequeue();
             if (msg._object == MetaField.SNAKE)
             {
-                //print("snake");
-                //print("old: " + msg.oldPos.x + " " + msg.oldPos.y + " " + msg.oldPos.z);
-                //print("new: " + msg.newPos.x + " " + msg.newPos.y + " " + msg.newPos.z);
+                print("snake");
+                print("old: " + msg.oldPos.x + " " + msg.oldPos.y + " " + msg.oldPos.z);
+                print("new: " + msg.newPos.x + " " + msg.newPos.y + " " + msg.newPos.z);
             }
 
             if (msg.oldPos != null)
             {
                 setObject(MetaField.EMPTY, msg.oldPos);
+            }
+
+            if (msg.newRotation != null)
+            {
+                msg.obj.transform.rotation = msg.newRotation;
             }
 
             if (msg.newPos != null)
@@ -228,12 +212,14 @@ public class FieldManager : MonoBehaviour
                     }
                 }
                 int p = UnityEngine.Random.Range(0, fs.Count);
-                print("snake: " + fs[p].x + " " + fs[p].y + " " + fs[p].z + " " + MetaField.objectIndexToDir(fs[p].objIndex));
+                print("random position: " + fs[p].x + " " + fs[p].y + " " + fs[p].z + " " + MetaField.objectIndexToDir(fs[p].objIndex));
                 msg.obj.transform.position = localPosToWorld(fs[p], 0.5f);
                 msg.obj.transform.up = MetaField.objectIndexToDir(fs[p].objIndex);
                 setObject(msg._object, fs[p]);
+                if (msg._object == MetaField.ICE)
+                    spawner.setIcePosition(msg.obj, fs[p]);
             }
-
+            else { }
 
         }
     }
@@ -313,6 +299,7 @@ public class FieldManager : MonoBehaviour
     public void enqueueMsg(UpdateMessage msg)
     {
         updateQueue.Enqueue(msg);
-        //print(updateQueue.Count);
+        print("updateQueue.Count");
+        print(updateQueue.Count);
     }
 }

@@ -12,6 +12,7 @@ public class MetaField {
     public const int EMPTY = 0;
     public const int SNAKE = 1;
     public const int FOOD = 2;
+    public const int ICE = 3;
 
     public MetaField()
     {

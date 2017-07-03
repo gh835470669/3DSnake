@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FieldPosition
 {
@@ -29,10 +30,12 @@ public class Snake : MonoBehaviour {
     public GameObject head;
     public GameObject bodyPrefab;
     public RectTransform healthBar;
+    public Chores chores;
     private List<GameObject> bodies = new List<GameObject>();
     private List<FieldPosition> bodies_pos = new List<FieldPosition>();
 
     private FieldManager fieldManager;
+    public Spawner spawner;
 
     private FieldPosition headPositionInField;
 
@@ -77,7 +80,7 @@ public class Snake : MonoBehaviour {
         fieldManager.nextPos(headPositionInField, forwardDir, head.transform.up, out next);
 
         FieldPosition n;
-        Quaternion rotation = head.transform.rotation;
+        Quaternion oldRotation = head.transform.rotation;
 
         if (forwardDir == head.transform.forward)
             head.transform.Rotate(0, 0, 0, Space.Self);
@@ -85,6 +88,7 @@ public class Snake : MonoBehaviour {
             head.transform.Rotate(0, 90, 0, Space.Self);
         else if (forwardDir == -head.transform.right)
             head.transform.Rotate(0, -90, 0, Space.Self);
+
 
         if (next[0] == null || next[0].isExist == false)
         {
@@ -94,6 +98,7 @@ public class Snake : MonoBehaviour {
                     MetaField.objectDirToIndex(forwardDir));
                 if (fieldManager.getObject(n) == MetaField.BAN) return;
                 head.transform.Rotate(90, 0, 0, Space.Self);
+
             }
             else
             {
@@ -111,37 +116,55 @@ public class Snake : MonoBehaviour {
             if (fieldManager.getObject(n) == MetaField.BAN) return;
             head.transform.Rotate(-90, 0, 0, Space.Self);
         }
+        Quaternion newRotation = head.transform.rotation;
 
         bool isAddBody = false;
         //judge the obj in n here
         if (fieldManager.getObject(n) == MetaField.FOOD)
         {
-            UpdateMessage msg = new UpdateMessage();
-            msg._object = MetaField.FOOD;
-            msg.obj = fieldManager.food;
-            msg.oldPos = n;
-            msg.isNewRandom = true;
-            fieldManager.enqueueMsg(msg);
-            isAddBody = true;
             print("meet food");
-            changeHealth(-1);
+            spawner.sendFoodMessage(n);
+            //UpdateMessage msg = new UpdateMessage();
+            //msg._object = MetaField.FOOD;
+            //msg.obj = fieldManager.food;
+            //msg.oldPos = n;
+            //msg.isNewRandom = true;
+            //fieldManager.enqueueMsg(msg);
+            isAddBody = true;
+            changeHealth(1);
+            chores.changePoint(1);
+
         }
+        else if (fieldManager.getObject(n) == MetaField.SNAKE)
+        {
+            SceneManager.LoadScene("gameOver");
+        }
+        else if (fieldManager.getObject(n) == MetaField.ICE)
+        {
+            print("meet ice");
+            spawner.sendIceMessage(n);
+            changeHealth(-2);
+            chores.changePoint(-1);
+        }
+
         //end
 
-        updateSnake(n, rotation, isAddBody);
+        updateSnake(n, oldRotation, newRotation, isAddBody);
     }
 
-    private void updateSnake(FieldPosition nextHeadPosition, Quaternion rotation, bool isAddBody)
+    private void updateSnake(FieldPosition nextHeadPosition, Quaternion oldHeadrotation, Quaternion newHeadrotation, bool isAddBody)
     {
+        head.transform.rotation = oldHeadrotation;
+
         var msgs = new List<UpdateMessage>();
-        var q_rot = new Queue<Quaternion>();
+        //var q_rot = new Queue<Quaternion>();
 
         UpdateMessage msg = new UpdateMessage();
         msg.obj = head;
         msg._object = MetaField.SNAKE;
         msg.oldPos = headPositionInField;
         msgs.Add(msg);
-        q_rot.Enqueue(rotation);
+        //q_rot.Enqueue(oldHeadrotation);
         for (int i = 0; i < bodies.Count; i++)
         {
             UpdateMessage msgb = new UpdateMessage();
@@ -149,7 +172,7 @@ public class Snake : MonoBehaviour {
             msgb._object = MetaField.SNAKE;
             msgb.oldPos = bodies_pos[i];
             msgs.Add(msgb);
-            q_rot.Enqueue(bodies[i].transform.rotation);
+            //q_rot.Enqueue(bodies[i].transform.rotation);
         }
         if (isAddBody)
         {
@@ -165,12 +188,15 @@ public class Snake : MonoBehaviour {
         }
 
         msgs[0].newPos = nextHeadPosition;
+        msgs[0].newRotation = newHeadrotation;
         headPositionInField = nextHeadPosition;
-        for (int i = 0; i < bodies.Count; i++)
+        for (int i = 1; i < bodies.Count + 1; i++)
         {
-            msgs[i + 1].newPos = msgs[i].oldPos;
-            bodies[i].transform.rotation = q_rot.Dequeue();
-            bodies_pos[i] = msgs[i].oldPos;
+            msgs[i].newPos = msgs[i - 1].oldPos;
+            //bodies[i].transform.rotation = q_rot.Dequeue();
+            bodies_pos[i - 1] = msgs[i - 1].oldPos;
+            if (i == 1) msgs[i].newRotation = oldHeadrotation;
+            else msgs[i].newRotation = bodies[i - 2].transform.rotation;
         }
 
         for (int i = 0; i < msgs.Count; i++)
@@ -187,5 +213,7 @@ public class Snake : MonoBehaviour {
     {
         health += deltaHealth;
         healthBar.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, (float)health / maxHealth * 100);
+        if (health <= 0)
+            SceneManager.LoadScene("gameover");
     }
 }
